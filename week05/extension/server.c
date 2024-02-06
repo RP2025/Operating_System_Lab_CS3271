@@ -9,6 +9,7 @@
 #define SHMSZ sizeof(struct task)
 
 struct task {
+    int task_id;
     int data[100];
     int size;
     pid_t worker_pid;
@@ -58,23 +59,19 @@ int main() {
 
     while (solve->status != -1) {
         if (solve->status == 0) {
+            solve->task_id++;
             solve->size = 100;
             generateRandomArray(solve->data, solve->size);
             solve->status = 1;
-            printf("Server: Generated random numbers for sorting.\n");
+            printf("Server: Generated random numbers for task %d.\n", solve->task_id);
         }
-        else if (solve->status == 1) {
-            printf("Server: Unsorted array:\n");
-            for (int i = 0; i < solve->size; i++) {
-                printf("%d ", solve->data[i]);
-            }
-            printf("\n");
-            solve->status = 2;
+        else if (solve->status == 2) {
+            printf("Server: Waiting for Worker PID %d to start sorting task %d.\n", solve->worker_pid, solve->task_id);
         }
         else if (solve->status == 3) {
             // Sorting the array before printing
             bubbleSort(solve->data, solve->size);
-            printf("Server: Sorted array by Worker PID %d:\n", solve->worker_pid);
+            printf("Server: Sorted array for task %d by Worker PID %d:\n", solve->task_id, solve->worker_pid);
             for (int i = 0; i < solve->size; i++) {
                 printf("%d ", solve->data[i]);
             }
